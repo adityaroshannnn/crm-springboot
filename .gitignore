@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
@@ -31,3 +32,23 @@ build/
 
 ### VS Code ###
 .vscode/
+=======
+# Eclipse
+.metadata/
+.classpath
+.project
+.settings/
+
+# Java build
+bin/
+target/
+
+# Node
+node_modules/
+dist/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+>>>>>>> e74755d (Initial clean commit of frontend-part project)
