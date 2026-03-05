@@ -19,6 +19,10 @@
                 <p class="text-white-50 small">Register as a customer</p>
             </div>
             <div class="card-body p-4">
+                <div th:if="${param.error}" class="alert alert-danger d-flex align-items-center mb-3" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Passwords do not match. Please try again.
+                </div>
                 <form th:action="@{/register}" method="post">
                     <div class="mb-3">
                         <label for="username" class="form-label fw-semibold">Username</label>

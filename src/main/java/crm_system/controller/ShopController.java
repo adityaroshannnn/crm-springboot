@@ -38,6 +38,9 @@ public class ShopController {
     @GetMapping("/shop/buy")
     public String buyConfirmation(@RequestParam("id") Long productId, Model model) {
         Product product = productService.getProductById(productId);
+        if (product == null) {
+            return "redirect:/shop?error";
+        }
         model.addAttribute("product", product);
         return "purchase";
     }

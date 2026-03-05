@@ -27,7 +27,11 @@ public class AuthController {
 
     @PostMapping("/register")
     public String register(@RequestParam String username,
-                           @RequestParam String password) {
+                           @RequestParam String password,
+                           @RequestParam String confirm) {
+        if (!password.equals(confirm)) {
+            return "redirect:/register?error";
+        }
         userService.registerUser(username, password);
         return "redirect:/login";
     }
