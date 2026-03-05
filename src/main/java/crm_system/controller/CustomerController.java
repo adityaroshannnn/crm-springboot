@@ -75,7 +75,7 @@ public class CustomerController {
         customer.setManager(managerService.getManagerById(managerId));
         customerService.saveCustomer(customer);
 
-        return "redirect:/customers/add";
+        return "redirect:/customers";
     }
    
 

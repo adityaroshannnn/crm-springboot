@@ -1,47 +1,63 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Add Customer</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Add Customer')}"></head>
 <body>
+<div th:replace="~{fragments/layout :: layout(~{::section})}">
+    <section>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0">
+                <i class="bi bi-person-plus me-2 text-primary"></i>
+                <span th:text="${customer.id != 0} ? 'Edit Customer' : 'Add Customer'">Add Customer</span>
+            </h4>
+            <a th:href="@{/customers}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to List
+            </a>
+        </div>
 
-<h2>Add Customer</h2>
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form th:action="@{/customers/save}" th:object="${customer}" method="post">
+                    <input type="hidden" th:field="*{id}">
 
-<form th:action="@{/customers/save}" th:object="${customer}" method="post">
-    
-    <input type="hidden" th:field="*{id}">
-
-    <label>First Name:</label>
-    <input type="text" th:field="*{firstName}" required /><br><br>
-
-    <label>Last Name:</label>
-    <input type="text" th:field="*{lastName}" required /><br><br>
-
-    <label>Email:</label>
-    <input type="email" th:field="*{email}" required /><br><br>
-
-    <label>Status:</label>
-    <select th:field="*{status}">
-        <option th:each="s : ${statuses}"
-                th:value="${s}"
-                th:text="${s}">
-        </option>
-    </select><br><br>
-
-   <label>Manager:</label>
-<select name="managerId" required>
-    <option value="">-- Select Manager --</option>
-    <option th:each="m : ${managers}"
-            th:value="${m.id}"
-            th:text="${m.name}">
-    </option>
-</select>
-<br><br>
-   
-
-    <button type="submit">Save Customer</button>
-
-</form>
-
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">First Name</label>
+                            <input type="text" class="form-control" th:field="*{firstName}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Last Name</label>
+                            <input type="text" class="form-control" th:field="*{lastName}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email</label>
+                            <input type="email" class="form-control" th:field="*{email}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Status</label>
+                            <select class="form-select" th:field="*{status}">
+                                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Manager</label>
+                            <select class="form-select" name="managerId" required>
+                                <option value="">-- Select Manager --</option>
+                                <option th:each="m : ${managers}" th:value="${m.id}" th:text="${m.name}"
+                                        th:selected="${customer.manager != null and customer.manager.id == m.id}"></option>
+                            </select>
+                        </div>
+                        <div class="col-12 mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i>Save Customer
+                            </button>
+                            <a th:href="@{/customers}" class="btn btn-light ms-2">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
 </body>
 </html>

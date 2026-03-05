@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Purchase')}"></head>
+<body>
+<div th:replace="~{fragments/layout :: layout(~{::section})}">
+    <section>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0"><i class="bi bi-cart-check me-2 text-primary"></i>Confirm Purchase</h4>
+            <a th:href="@{/shop}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Shop
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="text-center mb-4">
+                            <i class="bi bi-box-seam fs-1 text-primary d-block mb-2"></i>
+                            <h5 class="fw-bold" th:text="${product.name}">Product Name</h5>
+                            <p class="text-muted" th:text="${product.description}">Description</p>
+                        </div>
+
+                        <div class="alert alert-light border mb-4">
+                            <div class="row text-center">
+                                <div class="col-6 border-end">
+                                    <div class="text-muted small">Unit Price</div>
+                                    <div class="fs-5 fw-bold text-primary" th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 2)}">$0.00</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-muted small">In Stock</div>
+                                    <div class="fs-5 fw-bold text-success" th:text="${product.stock}">0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form th:action="@{/shop/purchase}" method="post">
+                            <input type="hidden" name="productId" th:value="${product.id}">
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Quantity</label>
+                                <input type="number" class="form-control form-control-lg" name="quantity"
+                                       min="1" th:max="${product.stock}" value="1" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="bi bi-check-circle me-2"></i>Confirm Purchase
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+</html>
