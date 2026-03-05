@@ -40,16 +40,45 @@ CREATE TABLE task (
     customer_id INT,
     FOREIGN KEY (customer_id) REFERENCES customer(id)
 );
-INSERT INTO manager (name, email) VALUES
-('Admin One', 'admin1@crm.com'),
-('Admin Two', 'admin2@crm.com');
-SELECT * FROM customer;
-USE crm_db;
+
+CREATE TABLE users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL,
+    enabled BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE products (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255),
+    description TEXT,
+    price DOUBLE NOT NULL,
+    stock INT NOT NULL,
+    active BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE orders (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT,
+    product_id BIGINT,
+    quantity INT NOT NULL,
+    total_price DOUBLE NOT NULL,
+    status VARCHAR(30) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (customer_id) REFERENCES customer(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
 
 INSERT INTO manager (name, email) VALUES
 ('Admin One', 'admin1@crm.com'),
-('Admin Two', 'admin2@crm.com'),
-('Sales Lead', 'sales@crm.com');
+('Admin Two', 'admin2@crm.com');
+
+-- Seed users (passwords are BCrypt encoded; admin123 and cust123)
+-- Note: actual seeding is handled by DataLoader on application startup
+
+SELECT * FROM customer;
+
 
 
 
