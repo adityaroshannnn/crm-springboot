@@ -1,85 +1,64 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Customer List</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-
-        table {
-            border-collapse: collapse;
-            width: 90%;
-        }
-
-        th, td {
-            border: 1px solid #444;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #eee;
-        }
-
-        a {
-            text-decoration: none;
-            color: blue;
-            margin-right: 8px;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Customers')}"></head>
 <body>
-
-<h2>Customer List</h2>
-
-<table>
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>First Name</th>
-        <th>Last Name</th>
-        <th>Email</th>
-        <th>Status</th>
-        <th>Manager</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    <tr th:each="c : ${customers}">
-        <td th:text="${c.id}"></td>
-        <td th:text="${c.firstName}"></td>
-        <td th:text="${c.lastName}"></td>
-        <td th:text="${c.email}"></td>
-        <td th:text="${c.status}"></td>
-
-        <!-- NULL SAFE MANAGER -->
-        <td th:text="${c.manager != null ? c.manager.name : 'Not Assigned'}"></td>
-
-        <!-- ACTIONS -->
-        <td>
-            <a th:href="@{/customers/edit(id=${c.id})}">
-                Edit
+<div th:replace="~{fragments/layout :: layout(~{::section})}">
+    <section>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0"><i class="bi bi-people me-2 text-primary"></i>Customers</h4>
+            <a th:href="@{/customers/add}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>Add Customer
             </a>
+        </div>
 
-            <a th:href="@{/customers/delete(id=${c.id})}"
-               onclick="return confirm('Are you sure you want to delete this customer?')">
-                Delete
-            </a>
-        </td>
-    </tr>
-    </tbody>
-</table>
-
-<br>
-
-<a href="/customers/add">➕ Add New Customer</a>
-
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Manager</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="c : ${customers}">
+                            <td th:text="${c.id}"></td>
+                            <td th:text="${c.firstName}"></td>
+                            <td th:text="${c.lastName}"></td>
+                            <td th:text="${c.email}"></td>
+                            <td>
+                                <span th:class="'badge ' + (${c.status.name() == 'ACTIVE'} ? 'bg-success' : (${c.status.name() == 'LEAD'} ? 'bg-info' : (${c.status.name() == 'INACTIVE'} ? 'bg-secondary' : 'bg-danger')))"
+                                      th:text="${c.status}"></span>
+                            </td>
+                            <td th:text="${c.manager != null ? c.manager.name : 'Not Assigned'}"></td>
+                            <td>
+                                <a th:href="@{/customers/edit(id=${c.id})}" class="btn btn-sm btn-outline-primary me-1">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a th:href="@{/customers/delete(id=${c.id})}" class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirmDelete()">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(customers)}">
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="bi bi-inbox fs-4 d-block mb-2"></i>No customers found
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
 </body>
 </html>

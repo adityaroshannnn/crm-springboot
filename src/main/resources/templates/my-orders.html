@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('My Orders')}"></head>
+<body>
+<div th:replace="~{fragments/layout :: layout(~{::section})}">
+    <section>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0"><i class="bi bi-bag-check me-2 text-primary"></i>My Orders</h4>
+            <a th:href="@{/shop}" class="btn btn-primary">
+                <i class="bi bi-shop me-1"></i>Continue Shopping
+            </a>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="o : ${orders}">
+                            <td th:text="${o.id}"></td>
+                            <td th:text="${o.product != null ? o.product.name : 'N/A'}" class="fw-semibold"></td>
+                            <td th:text="${o.quantity}"></td>
+                            <td th:text="'$' + ${#numbers.formatDecimal(o.totalPrice, 1, 2)}"></td>
+                            <td>
+                                <span th:class="'badge ' + (${o.status.name() == 'PURCHASED'} ? 'bg-success' : (${o.status.name() == 'REFUND_REQUESTED'} ? 'bg-warning' : 'bg-secondary'))"
+                                      th:text="${o.status}"></span>
+                            </td>
+                            <td th:text="${#temporals.format(o.createdAt, 'dd MMM yyyy')}"></td>
+                            <td>
+                                <form th:if="${o.status.name() == 'PURCHASED'}"
+                                      th:action="@{/my-orders/refund}" method="post" class="d-inline">
+                                    <input type="hidden" name="id" th:value="${o.id}">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i>Request Refund
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(orders)}">
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="bi bi-bag fs-1 d-block mb-3"></i>
+                                You have no orders yet. <a th:href="@{/shop}">Start shopping!</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+</html>
