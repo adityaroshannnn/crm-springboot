@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org">
 <head th:fragment="head(title)">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,45 +20,41 @@
             <span class="fw-bold">CRM System</span>
         </div>
         <ul class="sidebar-nav">
-            <sec:authorize access="hasRole('ADMIN')">
-                <li>
-                    <a th:href="@{/dashboard}" th:classappend="${#httpServletRequest.requestURI == '/dashboard'} ? 'active'">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                </li>
-                <li>
-                    <a th:href="@{/customers}" th:classappend="${#httpServletRequest.requestURI.startsWith('/customers')} ? 'active'">
-                        <i class="bi bi-people"></i> Customers
-                    </a>
-                </li>
-                <li>
-                    <a th:href="@{/managers}" th:classappend="${#httpServletRequest.requestURI.startsWith('/managers')} ? 'active'">
-                        <i class="bi bi-person-badge"></i> Managers
-                    </a>
-                </li>
-                <li>
-                    <a th:href="@{/products}" th:classappend="${#httpServletRequest.requestURI.startsWith('/products')} ? 'active'">
-                        <i class="bi bi-box-seam"></i> Products
-                    </a>
-                </li>
-                <li>
-                    <a th:href="@{/orders}" th:classappend="${#httpServletRequest.requestURI.startsWith('/orders')} ? 'active'">
-                        <i class="bi bi-receipt"></i> Orders
-                    </a>
-                </li>
-            </sec:authorize>
-            <sec:authorize access="hasRole('CUSTOMER')">
-                <li>
-                    <a th:href="@{/shop}" th:classappend="${#httpServletRequest.requestURI.startsWith('/shop')} ? 'active'">
-                        <i class="bi bi-shop"></i> Shop
-                    </a>
-                </li>
-                <li>
-                    <a th:href="@{/my-orders}" th:classappend="${#httpServletRequest.requestURI.startsWith('/my-orders')} ? 'active'">
-                        <i class="bi bi-bag-check"></i> My Orders
-                    </a>
-                </li>
-            </sec:authorize>
+            <li>
+                <a th:href="@{/dashboard}">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/customers}">
+                    <i class="bi bi-people"></i> Customers
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/managers}">
+                    <i class="bi bi-person-badge"></i> Managers
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/products}">
+                    <i class="bi bi-box-seam"></i> Products
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/orders}">
+                    <i class="bi bi-receipt"></i> Orders
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/shop}">
+                    <i class="bi bi-shop"></i> Shop
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/my-orders}">
+                    <i class="bi bi-bag-check"></i> My Orders
+                </a>
+            </li>
         </ul>
         <div class="sidebar-footer">
             <form th:action="@{/logout}" method="post">
@@ -79,12 +74,7 @@
             </button>
             <div class="navbar-info ms-auto d-flex align-items-center gap-3">
                 <span class="text-muted small">
-                    <i class="bi bi-person-circle me-1"></i>
-                    <sec:authentication property="name"/>
-                    <span class="badge bg-primary ms-1">
-                        <sec:authorize access="hasRole('ADMIN')">Admin</sec:authorize>
-                        <sec:authorize access="hasRole('CUSTOMER')">Customer</sec:authorize>
-                    </span>
+                    <i class="bi bi-person-circle me-1"></i> Welcome
                 </span>
             </div>
         </header>
