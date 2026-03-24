@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Purchase')}"></head>
+<body>
+<div th:replace="~{fragments/layout :: layout(~{::section})}">
+    <section>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0"><i class="bi bi-cart-check me-2 text-primary"></i>Confirm Purchase</h4>
+            <a th:href="@{/shop}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Shop
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="text-center mb-4">
+                            <img th:if="${product.imageUrl != null}" th:src="${product.imageUrl}" alt="Product Image" class="img-fluid rounded mb-3" style="max-height: 150px; object-fit: contain;">
+                            <i th:unless="${product.imageUrl != null}" class="bi bi-box-seam fs-1 text-primary d-block mb-2"></i>
+                            <h5 class="fw-bold" th:text="${product.name}">Product Name</h5>
+                            <p class="text-muted" th:text="${product.description}">Description</p>
+                        </div>
+
+                        <div class="alert alert-danger" th:if="${param.error != null}">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <span th:if="${param.error[0] == 'PaymentRequired'}">Payment failed or was not completed. Please try again.</span>
+                            <span th:unless="${param.error[0] == 'PaymentRequired'}">An error occurred during purchase.</span>
+                        </div>
+                        <div class="alert alert-light border mb-4">
+                            <div class="row text-center">
+                                <div class="col-6 border-end">
+                                    <div class="text-muted small">Unit Price</div>
+                                    <div class="fs-5 fw-bold text-primary" th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 2)}">$0.00</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-muted small">In Stock</div>
+                                    <div class="fs-5 fw-bold text-success" th:text="${product.stock}">0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form th:action="@{/shop/purchase}" method="post" id="purchaseForm">
+                            <input type="hidden" name="productId" th:value="${product.id}">
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Quantity</label>
+                                <input type="number" class="form-control form-control-lg" name="quantity"
+                                       min="1" th:max="${product.stock}" value="1" required>
+                            </div>
+
+                            <h6 class="mt-4 mb-3 border-bottom pb-2">Payment Details</h6>
+                            
+                            <!-- Hidden fields to submit with form -->
+                            <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+                            <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
+                            <input type="hidden" name="razorpay_signature" id="razorpay_signature">
+
+                            <button type="button" id="payWithRazorpayBtn" class="btn btn-primary btn-lg w-100">
+                                <i class="bi bi-credit-card me-2"></i>Pay with Razorpay
+                            </button>
+                            
+                            <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+                            <script th:inline="javascript">
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const payBtn = document.getElementById('payWithRazorpayBtn');
+                                    const purchaseForm = document.getElementById('purchaseForm');
+                                    const quantityInput = document.querySelector('input[name="quantity"]');
+                                    
+                                    /*<![CDATA[*/
+                                    const unitPrice = [[${product.price}]];
+                                    const productName = [[${product.name}]];
+                                    const productDesc = [[${product.description}]];
+                                    const razorpayKeyId = [[${razorpayKeyId}]];
+                                    /*]]>*/
+
+                                    payBtn.addEventListener('click', function() {
+                                        if (!purchaseForm.checkValidity()) {
+                                            purchaseForm.reportValidity();
+                                            return;
+                                        }
+
+                                        const quantity = parseInt(quantityInput.value);
+                                        const totalAmount = unitPrice * quantity;
+
+                                        payBtn.disabled = true;
+                                        payBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Initializing...';
+
+                                        const csrfToken = document.querySelector('input[name="_csrf"]')?.value;
+                                        const headers = { 'Content-Type': 'application/json' };
+                                        if (csrfToken) {
+                                            headers['X-CSRF-TOKEN'] = csrfToken;
+                                        }
+
+                                        fetch('/api/payment/create_order', {
+                                            method: 'POST',
+                                            headers: headers,
+                                            body: JSON.stringify({ amount: totalAmount })
+                                        })
+                                        .then(response => {
+                                            if (!response.ok) throw new Error('Network response was not ok');
+                                            return response.json();
+                                        })
+                                        .then(data => {
+                                            if (data.error) throw new Error(data.error);
+
+                                            const options = {
+                                                "key": razorpayKeyId,
+                                                "amount": data.amount,
+                                                "currency": data.currency,
+                                                "name": "CRM Store",
+                                                "description": "Purchase of " + productName,
+                                                "order_id": data.orderId,
+                                                "handler": function (response){
+                                                    document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
+                                                    document.getElementById('razorpay_order_id').value = response.razorpay_order_id;
+                                                    document.getElementById('razorpay_signature').value = response.razorpay_signature;
+                                                    
+                                                    payBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Payment Successful! Redirecting...';
+                                                    payBtn.classList.replace('btn-primary', 'btn-success');
+                                                    purchaseForm.submit();
+                                                },
+                                                "prefill": {
+                                                    "name": "Customer",
+                                                    "email": "customer@crm.com"
+                                                },
+                                                "theme": {
+                                                    "color": "#0d6efd"
+                                                },
+                                                "modal": {
+                                                    "ondismiss": function(){
+                                                        payBtn.disabled = false;
+                                                        payBtn.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Razorpay';
+                                                    }
+                                                }
+                                            };
+                                            const rzp = new Razorpay(options);
+                                            rzp.on('payment.failed', function (response){
+                                                alert("Payment Failed. Reason: " + response.error.description);
+                                                payBtn.disabled = false;
+                                                payBtn.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Razorpay';
+                                            });
+                                            rzp.open();
+                                        })
+                                        .catch(error => {
+                                            console.error('Error:', error);
+                                            alert('Could not initialize payment. ' + error.message);
+                                            payBtn.disabled = false;
+                                            payBtn.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Razorpay';
+                                        });
+                                    });
+                                });
+                            </script>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+</html>

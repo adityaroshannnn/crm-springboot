@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <title th:text="${title}">Otaku Archive</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- BootStrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- AOS Animation CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #d4af37; /* Muted Gold */
+            --bg-color: #050505; /* Obsidian Black */
+            --card-bg: rgba(20, 20, 20, 0.85); /* Deep Translucent Black */
+            --card-border: rgba(212, 175, 55, 0.15); /* Faint Gold Border */
+            --text-main: #e0e0e0; /* Ghost White */
+            --text-muted: #888888;
+            --font-main: 'Inter', sans-serif;
+            --font-headings: 'Cormorant Garamond', serif;
+        }
+
+        body {
+            background: var(--bg-color);
+            font-family: var(--font-main);
+            color: var(--text-main);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: 0.02em;
+        }
+
+        h1, h2, h3, h4, h5, h6, .brand-font {
+            font-family: var(--font-headings);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            height: 100vh;
+            background: rgba(8, 8, 8, 0.95);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .sidebar .brand-logo {
+            font-family: var(--font-headings);
+            font-size: 2rem;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-top: 1.5rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .sidebar a {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 14px 24px;
+            display: block;
+            border-radius: 4px;
+            margin: 8px 15px;
+            font-weight: 300;
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .sidebar a::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 0;
+            width: 2px;
+            background: var(--primary);
+            transition: all 0.4s ease;
+            opacity: 0;
+        }
+
+        .sidebar a:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.03);
+            padding-left: 32px;
+        }
+        
+        .sidebar a:hover::before {
+            height: 60%;
+            opacity: 1;
+        }
+        
+        .sidebar a i {
+            margin-right: 12px;
+            font-size: 1.1rem;
+            color: inherit;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: rgba(5, 5, 5, 0.8);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .content {
+            padding: 50px;
+            min-height: 100vh;
+        }
+
+        /* Minimalist Elegant Buttons */
+        .btn-primary, .btn-dark, .btn-success {
+            background-color: var(--primary) !important;
+            color: #000 !important;
+            border: 1px solid var(--primary) !important;
+            border-radius: 2px !important;
+            font-family: var(--font-main);
+            font-weight: 500;
+            font-size: 0.85rem;
+            letter-spacing: 0.15em;
+            padding: 12px 28px;
+            transition: all 0.4s ease;
+            text-transform: uppercase;
+        }
+        .btn-primary:hover, .btn-dark:hover, .btn-success:hover {
+            background-color: transparent !important;
+            color: var(--primary) !important;
+        }
+
+        .btn-outline-primary, .btn-outline-dark {
+            background-color: transparent !important;
+            color: #fff !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 2px !important;
+            font-family: var(--font-main);
+            font-weight: 400;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            padding: 10px 24px;
+            transition: all 0.4s ease;
+            text-transform: uppercase;
+        }
+        .btn-outline-primary:hover, .btn-outline-dark:hover {
+            border-color: var(--primary) !important;
+            color: var(--primary) !important;
+        }
+
+        /* Classy Glass Cards */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+            color: #fff;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 6px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        /* Elegant Chatbot UI */
+        .chat-fab {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            z-index: 1050;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--primary);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            transition: all 0.4s ease;
+        }
+        .chat-fab:hover {
+            background: rgba(212, 175, 55, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.2);
+            transform: translateY(-5px);
+        }
+        .chat-window {
+            position: fixed;
+            bottom: 120px;
+            right: 40px;
+            width: 360px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 4px;
+            background: rgba(10, 10, 10, 0.98);
+            z-index: 1050;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            animation: softFadeIn 0.5s ease forwards;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        @keyframes softFadeIn {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .chat-header {
+            background: transparent;
+            color: #fff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px;
+        }
+        .chat-bubble {
+            max-width: 85%;
+            padding: 14px 18px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+        .bot-bubble {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .user-bubble {
+            align-self: flex-end;
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        .chat-messages {
+            background: transparent;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .chat-input-area {
+            background: transparent;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 16px;
+        }
+        #chat-input {
+            background: rgba(255, 255, 255, 0.03);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            font-weight: 300;
+            font-size: 0.9rem;
+        }
+        #chat-input:focus {
+            border-color: var(--primary);
+            box-shadow: none;
+            background: rgba(212, 175, 55, 0.05);
+        }
+        #chat-send {
+            border-radius: 2px !important;
+            background-color: transparent !important;
+            border: 1px solid rgba(212, 175, 55, 0.4) !important;
+            color: var(--primary) !important;
+            transition: all 0.3s ease;
+        }
+        #chat-send:hover {
+            background-color: var(--primary) !important;
+            color: #000 !important;
+        }
+    </style>
+</head>
+
+<body th:fragment="layout(content)">
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Sidebar -->
+        <div class="col-md-2 sidebar d-none d-md-block">
+            <div class="brand-logo">THE ARCHIVE</div>
+            
+            <div sec:authorize="hasRole('ADMIN')">
+                <a href="/dashboard"><i class="bi bi-circle"></i> Dashboard</a>
+                <a href="/customers"><i class="bi bi-circle"></i> Members</a>
+                <a href="/products"><i class="bi bi-circle"></i> Collection</a>
+                <a href="/orders"><i class="bi bi-circle"></i> Requisitions</a>
+                <a href="/managers"><i class="bi bi-circle"></i> Curators</a>
+                <div class="my-4 border-bottom mx-4" style="border-color: rgba(255,255,255,0.05) !important;"></div>
+            </div>
+            
+            <a href="/shop"><i class="bi bi-diamond"></i> Boutique</a>
+            <a href="/my-orders"><i class="bi bi-diamond"></i> Acquisitions</a>
+        </div>
+
+        <!-- Page Content -->
+        <div class="col-md-10 content-wrapper">
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand-lg d-flex justify-content-between align-items-center">
+                <span class="d-md-none brand-font fs-4 text-white">THE ARCHIVE</span>
+                <span class="d-none d-md-block fs-6 fw-lighter" style="letter-spacing: 0.15em; color: var(--text-muted);">S Y S T E M   L I N K</span>
+                <div class="ms-auto">
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-outline-dark btn-sm">
+                            DISCONNECT
+                        </button>
+                    </form>
+                </div>
+            </nav>
+
+            <div class="content">
+                <div th:insert="${content}"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Bundle JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- AOS Animation JS -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        AOS.init({
+            duration: 1000,
+            easing: 'ease-out-cubic',
+            once: true,
+            offset: 50
+        });
+    });
+</script>
+
+<!-- Concierge Chatbot FAB -->
+<div id="chat-fab" class="chat-fab d-flex justify-content-center align-items-center">
+    <i class="bi bi-intersect fs-3"></i>
+</div>
+
+<!-- Concierge Chatbot Window -->
+<div id="chat-window" class="chat-window d-none">
+    <div class="chat-header d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <h5 class="mb-0 brand-font pb-0" style="letter-spacing: 0.05em; color: var(--primary);">CONCIERGE</h5>
+        </div>
+        <button id="chat-close" class="btn-close btn-close-white opacity-50" aria-label="Close" style="filter: invert(1) grayscale(100%);"></button>
+    </div>
+    
+    <div id="chat-messages" class="chat-messages overflow-auto" style="height: 380px;">
+        <!-- Initial Bot Message -->
+        <div class="chat-bubble bot-bubble">
+            Greetings. I am at your service. Do you require assistance with your <b>acquisitions</b>, <b>shipping</b>, or <b>returns</b>?
+        </div>
+    </div>
+    
+    <div class="chat-input-area d-flex gap-2">
+        <input type="text" id="chat-input" class="form-control shadow-none px-3" placeholder="Inquire softly..." autocomplete="off">
+        <button id="chat-send" class="btn d-flex justify-content-center align-items-center" style="width: 50px; height: 42px; flex-shrink: 0;">
+            <i class="bi bi-chevron-right fs-6"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const chatFab = document.getElementById('chat-fab');
+        const chatWindow = document.getElementById('chat-window');
+        const chatClose = document.getElementById('chat-close');
+        const chatInput = document.getElementById('chat-input');
+        const chatSend = document.getElementById('chat-send');
+        const chatMessages = document.getElementById('chat-messages');
+
+        // Toggle chat window
+        chatFab.addEventListener('click', () => {
+            chatWindow.classList.toggle('d-none');
+            if(!chatWindow.classList.contains('d-none')) {
+                chatInput.focus();
+            }
+        });
+
+        chatClose.addEventListener('click', () => {
+            chatWindow.classList.add('d-none');
+        });
+
+        function appendMessage(text, isUser) {
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble ${isUser ? 'user-bubble' : 'bot-bubble'}`;
+            let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<b style="color: var(--primary); font-weight: 500;">$1</b>');
+            if(isUser) formattedText = text; // User bubbles keep plain text
+            bubble.innerHTML = formattedText;
+            chatMessages.appendChild(bubble);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTyping() {
+            const indicator = document.createElement('div');
+            indicator.id = 'typing-indicator';
+            indicator.className = 'chat-bubble bot-bubble text-muted';
+            indicator.style.fontSize = '0.75rem';
+            indicator.style.fontStyle = 'italic';
+            indicator.style.padding = '8px 14px';
+            indicator.innerText = 'Transcribing...';
+            chatMessages.appendChild(indicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTyping() {
+            const indicator = document.getElementById('typing-indicator');
+            if(indicator) indicator.remove();
+        }
+
+        async function sendMessage() {
+            const msg = chatInput.value.trim();
+            if(!msg) return;
+
+            appendMessage(msg, true);
+            chatInput.value = '';
+            showTyping();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                
+                const data = await response.json();
+                
+                setTimeout(() => {
+                    removeTyping();
+                    appendMessage(data.response, false);
+                }, 1000); // Slower, more elegant wait
+            } catch (err) {
+                removeTyping();
+                appendMessage("I apologize, but our connection has been severed. Please try again momentarily.", false);
+            }
+        }
+
+        chatSend.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') sendMessage();
+        });
+    });
+</script>
+
+</body>
+</html>

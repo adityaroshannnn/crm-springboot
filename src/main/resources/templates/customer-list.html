@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Customers')}"></head>
+<body>
+<div th:replace="~{fragments/layout :: layout(~{::section})}">
+    <section>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0"><i class="bi bi-people me-2 text-primary"></i>Customers</h4>
+            <a th:href="@{/customers/add}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>Add Customer
+            </a>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Manager</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="c : ${customers}">
+                            <td th:text="${c.id}"></td>
+                            <td th:text="${c.firstName}"></td>
+                            <td th:text="${c.lastName}"></td>
+                            <td th:text="${c.email}"></td>
+                            <td>
+                                <span th:class="'badge ' + (${c.status.name() == 'ACTIVE'} ? 'bg-success' : (${c.status.name() == 'LEAD'} ? 'bg-info' : (${c.status.name() == 'INACTIVE'} ? 'bg-secondary' : 'bg-danger')))"
+                                      th:text="${c.status}"></span>
+                            </td>
+                            <td th:text="${c.manager != null ? c.manager.name : 'Not Assigned'}"></td>
+                            <td>
+                                <a th:href="@{/customers/edit(id=${c.id})}" class="btn btn-sm btn-outline-primary me-1">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a th:href="@{/customers/delete(id=${c.id})}" class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirmDelete()">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(customers)}">
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="bi bi-inbox fs-4 d-block mb-2"></i>No customers found
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+</html>

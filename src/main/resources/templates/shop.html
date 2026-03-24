@@ -1,0 +1,111 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('The Archive | OtakuHub')}"></head>
+
+<body>
+<div th:replace="~{fragments/layout :: layout(~{::section})}">
+    <section>
+        <!-- Elegant Hero Header -->
+        <div class="d-flex justify-content-between align-items-end mb-5 pb-3" data-aos="fade-down" style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+            <div>
+                <h1 class="display-4 brand-font mb-2" style="color: var(--primary); font-weight: 400; letter-spacing: 0.05em;">The Archive</h1>
+                <p class="lead mb-0" style="color: var(--text-muted); font-weight: 300; letter-spacing: 0.02em;">Discover exclusive relics and curated artifacts.</p>
+            </div>
+            <div class="d-none d-md-block">
+                <span class="badge rounded-1 py-2 px-4 fs-6" style="background: transparent; color: var(--primary); border: 1px solid var(--primary); font-family: var(--font-main); font-weight: 300; letter-spacing: 0.15em;">LATEST CURATION</span>
+            </div>
+        </div>
+
+        <div class="row g-5">
+            <!-- Minimalist Product Card -->
+            <div class="col-12 col-md-6 col-lg-4" th:each="p, pStat : ${products}" 
+                 data-aos="fade-up" th:attr="data-aos-delay=${pStat.index * 100}">
+                
+                <div class="card h-100 product-card overflow-hidden">
+                    <div class="product-image-container position-relative" style="height: 320px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                        <!-- Mock Minimal Graphic or Image-->
+                        <img th:if="${p.imageUrl != null}" th:src="${p.imageUrl}" alt="Product Image" style="width:100%; height:100%; object-fit:contain; transition: transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);">
+                        <i th:unless="${p.imageUrl != null}" class="bi bi-heptagon" style="font-size: 8rem; color: rgba(255, 255, 255, 0.05); transition: all 0.8s ease;"></i>
+                        
+                        <div class="position-absolute top-0 end-0 p-4">
+                            <span class="badge rounded-1 shadow-sm" style="background: var(--primary); color: #000; font-weight: 500; letter-spacing: 0.1em; padding: 6px 12px;" th:if="${p.stock > 10}">AVAILABLE</span>
+                            <span class="badge rounded-1 shadow-sm" style="background: transparent; color: #fff; border: 1px solid #fff; font-weight: 400; letter-spacing: 0.1em; padding: 6px 12px;" th:if="${p.stock > 0 and p.stock <= 10}">SCARCE</span>
+                            <span class="badge rounded-1 shadow-sm" style="background: rgba(20, 20, 20, 0.8); color: #555; border: 1px solid #333; font-weight: 400; letter-spacing: 0.1em; padding: 6px 12px;" th:if="${p.stock == 0}">DEPLETED</span>
+                        </div>
+                    </div>
+
+                    <div class="card-body d-flex flex-column p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <h4 class="card-title brand-font mb-0" th:text="${p.name}" style="color: #fff; font-size: 1.5rem;">Artifact Name</h4>
+                            <h4 class="brand-font" style="color: var(--primary); font-size: 1.4rem;" th:text="${'$' + #numbers.formatDecimal(p.price, 1, 2)}">$0.00</h4>
+                        </div>
+                        
+                        <p class="card-text flex-grow-1" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; font-weight: 300;" th:text="${p.description}">
+                            Description goes here.
+                        </p>
+                        
+                        <div class="d-flex gap-3 mt-4">
+                            <a th:href="@{/shop/product/{id}(id=${p.id})}" class="btn btn-outline-dark flex-grow-1">
+                                INSPECT
+                            </a>
+                            <a th:href="@{/shop/buy(id=${p.id})}"
+                               class="btn btn-primary flex-grow-1"
+                               th:classappend="${p.stock==0?' disabled':''}">
+                                ACQUIRE
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            body {
+                background: var(--bg-color);
+                background-image: radial-gradient(circle at top right, rgba(212, 175, 55, 0.05), transparent 40%);
+            }
+            
+            .product-card {
+                background: rgba(15, 15, 15, 0.4) !important;
+                border: 1px solid rgba(255, 255, 255, 0.03) !important;
+                border-radius: 2px !important;
+                box-shadow: 0 15px 35px rgba(0,0,0,0.4) !important;
+            }
+            .product-card:hover {
+                transform: translateY(-8px);
+                border-color: rgba(212, 175, 55, 0.3) !important;
+                box-shadow: 0 25px 50px rgba(0,0,0,0.6) !important;
+                background: rgba(20, 20, 20, 0.6) !important;
+            }
+            
+            .product-image-container {
+                background: transparent !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            }
+            
+            .product-card:hover .product-image-container img {
+                transform: scale(1.05);
+            }
+            .product-card:hover .product-image-container i {
+                transform: scale(1.05) rotate(15deg);
+                color: rgba(212, 175, 55, 0.2) !important;
+            }
+            
+            /* Delicate diagonal line overlay for extra high-end feel */
+            .product-image-container::after {
+                content: '';
+                position: absolute;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 4px,
+                    rgba(255, 255, 255, 0.01) 4px,
+                    rgba(255, 255, 255, 0.01) 5px
+                );
+                pointer-events: none;
+            }
+        </style>
+    </section>
+</div>
+</body>
+</html>
