@@ -11,15 +11,15 @@ import crm_system.entity.Review;
 import crm_system.service.ReviewService;
 import crm_system.enums.CustomerStatus;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/shop")
 public class ShopController {
 
     private final ProductService productService;
@@ -40,28 +40,25 @@ public class ShopController {
         this.reviewService = reviewService;
     }
 
-    @GetMapping("/shop")
-    public String shop(Model model) {
-        model.addAttribute("products", productService.getActiveProducts());
-        return "shop";
+    @GetMapping
+    public List<Product> shop() {
+        return productService.getActiveProducts();
     }
 
-    @GetMapping("/shop/product/{id}")
-    public String productDetails(@PathVariable("id") Long id, Model model) {
+    @GetMapping("/product/{id}")
+    public ResponseEntity<?> productDetails(@PathVariable("id") Long id) {
         Product product = productService.getProductById(id);
         if (product == null) {
-            return "redirect:/shop?error";
+            return ResponseEntity.notFound().build();
         }
-        model.addAttribute("product", product);
-        model.addAttribute("reviews", reviewService.getReviewsByProductId(id));
-        return "product-details";
+        List<Review> reviews = reviewService.getReviewsByProductId(id);
+        return ResponseEntity.ok(Map.of("product", product, "reviews", reviews));
     }
 
-    @PostMapping("/shop/product/{id}/review")
-    public String submitReview(@PathVariable("id") Long productId,
-                               @RequestParam("rating") int rating,
-                               @RequestParam("comment") String comment,
-                               Authentication authentication) {
+    @PostMapping("/product/{id}/review")
+    public ResponseEntity<?> submitReview(@PathVariable("id") Long productId,
+                                          @RequestBody Map<String, Object> payload,
+                                          Authentication authentication) {
         String username = authentication.getName();
         Customer customer = customerRepository.findByEmail(username + "@crm.com").orElse(null);
         Product product = productService.getProductById(productId);
@@ -70,32 +67,27 @@ public class ShopController {
             Review review = new Review();
             review.setProduct(product);
             review.setCustomer(customer);
-            review.setRating(rating);
-            review.setComment(comment);
-            reviewService.saveReview(review);
+            
+            // Extract rating and comment safely
+            try {
+                review.setRating(Integer.parseInt(payload.get("rating").toString()));
+                review.setComment((String) payload.get("comment"));
+                reviewService.saveReview(review);
+                return ResponseEntity.ok(Map.of("success", true, "review", review));
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Invalid review format"));
+            }
         }
-        return "redirect:/shop/product/" + productId;
+        return ResponseEntity.badRequest().body(Map.of("error", "Product or user not found"));
     }
 
-    @GetMapping("/shop/buy")
-    public String buyConfirmation(@RequestParam("id") Long productId, Model model) {
-        Product product = productService.getProductById(productId);
-        if (product == null) {
-            return "redirect:/shop?error";
-        }
-        model.addAttribute("product", product);
-        model.addAttribute("razorpayKeyId", razorpayKeyId);
-        return "purchase";
-    }
-
-    @PostMapping("/shop/purchase")
-    public String purchase(@RequestParam("productId") Long productId,
-                           @RequestParam("quantity") int quantity,
-                           @RequestParam(value = "razorpay_payment_id", required = false) String razorpayPaymentId,
-                           Authentication authentication) {
+    @PostMapping("/purchase")
+    public ResponseEntity<?> purchase(@RequestBody Map<String, Object> payload,
+                                      Authentication authentication) {
         
+        String razorpayPaymentId = (String) payload.get("razorpay_payment_id");
         if (razorpayPaymentId == null || razorpayPaymentId.trim().isEmpty()) {
-            return "redirect:/shop/buy?id=" + productId + "&error=PaymentRequired";
+            return ResponseEntity.badRequest().body(Map.of("error", "Payment Required"));
         }
 
         String username = authentication.getName();
@@ -110,10 +102,13 @@ public class ShopController {
             customer = customerRepository.save(customer);
         }
 
+        Long productId = Long.valueOf(payload.get("productId").toString());
+        int quantity = Integer.parseInt(payload.get("quantity").toString());
+
         Product product = productService.getProductById(productId);
 
         if (product == null || product.getStock() < quantity) {
-            return "redirect:/shop?error";
+            return ResponseEntity.badRequest().body(Map.of("error", "Product not found or out of stock"));
         }
 
         Order order = new Order();
@@ -127,11 +122,6 @@ public class ShopController {
         product.setStock(product.getStock() - quantity);
         productService.saveProduct(product);
 
-        return "redirect:/shop/order-success";
-    }
-
-    @GetMapping("/shop/order-success")
-    public String orderSuccess() {
-        return "order-success";
+        return ResponseEntity.ok(Map.of("success", true, "order", order));
     }
 }

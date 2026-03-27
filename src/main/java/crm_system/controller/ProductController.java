@@ -2,14 +2,13 @@ package crm_system.controller;
 
 import crm_system.entity.Product;
 import crm_system.service.ProductService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/products")
 public class ProductController {
 
     private final ProductService productService;
@@ -18,33 +17,25 @@ public class ProductController {
         this.productService = productService;
     }
 
-    @GetMapping("/products")
-    public String listProducts(Model model) {
-        model.addAttribute("products", productService.getAllProducts());
-        return "product-list";
+    @GetMapping
+    public List<Product> listProducts() {
+        return productService.getAllProducts();
     }
 
-    @GetMapping("/products/add")
-    public String showAddForm(Model model) {
-        model.addAttribute("product", new Product());
-        return "add-product";
-    }
-
-    @PostMapping("/products/save")
-    public String saveProduct(@ModelAttribute("product") Product product) {
+    @PostMapping
+    public ResponseEntity<Product> saveProduct(@RequestBody Product product) {
         productService.saveProduct(product);
-        return "redirect:/products";
+        return ResponseEntity.ok(product);
     }
 
-    @GetMapping("/products/edit")
-    public String showEditForm(@RequestParam("id") Long id, Model model) {
-        model.addAttribute("product", productService.getProductById(id));
-        return "add-product";
+    @GetMapping("/{id}")
+    public ResponseEntity<Product> getProduct(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(productService.getProductById(id));
     }
 
-    @GetMapping("/products/delete")
-    public String deleteProduct(@RequestParam("id") Long id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteProduct(@PathVariable("id") Long id) {
         productService.deleteProduct(id);
-        return "redirect:/products";
+        return ResponseEntity.ok().build();
     }
 }

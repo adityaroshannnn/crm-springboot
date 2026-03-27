@@ -6,14 +6,15 @@ import crm_system.enums.OrderStatus;
 import crm_system.repository.CustomerRepository;
 import crm_system.service.OrderService;
 import crm_system.service.ProductService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
+import java.util.Collections;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api")
 public class OrderController {
 
     private final OrderService orderService;
@@ -29,35 +30,33 @@ public class OrderController {
     }
 
     @GetMapping("/orders")
-    public String listOrders(Model model) {
-        model.addAttribute("orders", orderService.getAllOrders());
-        return "order-list";
+    public List<Order> listOrders() {
+        return orderService.getAllOrders();
     }
 
     @GetMapping("/my-orders")
-    public String myOrders(Authentication authentication, Model model) {
+    public List<Order> myOrders(Authentication authentication) {
         String username = authentication.getName();
         Customer customer = customerRepository.findByEmail(username + "@crm.com").orElse(null);
         if (customer != null) {
-            model.addAttribute("orders", orderService.getOrdersByCustomerId(customer.getId()));
-        } else {
-            model.addAttribute("orders", java.util.Collections.emptyList());
+            return orderService.getOrdersByCustomerId(customer.getId());
         }
-        return "my-orders";
+        return Collections.emptyList();
     }
 
-    @PostMapping("/my-orders/refund")
-    public String requestRefund(@RequestParam("id") Long orderId) {
+    @PostMapping("/my-orders/refund/{id}")
+    public ResponseEntity<?> requestRefund(@PathVariable("id") Long orderId) {
         Order order = orderService.getOrderById(orderId);
         if (order != null && order.getStatus() == OrderStatus.PURCHASED) {
             order.setStatus(OrderStatus.REFUND_REQUESTED);
             orderService.saveOrder(order);
+            return ResponseEntity.ok(order);
         }
-        return "redirect:/my-orders";
+        return ResponseEntity.badRequest().body("Order not found or not purchased");
     }
 
-    @PostMapping("/orders/approve-refund")
-    public String approveRefund(@RequestParam("id") Long orderId) {
+    @PostMapping("/orders/approve-refund/{id}")
+    public ResponseEntity<?> approveRefund(@PathVariable("id") Long orderId) {
         Order order = orderService.getOrderById(orderId);
         if (order != null && order.getStatus() == OrderStatus.REFUND_REQUESTED) {
             order.setStatus(OrderStatus.REFUNDED);
@@ -67,7 +66,8 @@ public class OrderController {
                 order.getProduct().setStock(order.getProduct().getStock() + order.getQuantity());
                 productService.saveProduct(order.getProduct());
             }
+            return ResponseEntity.ok(order);
         }
-        return "redirect:/orders";
+        return ResponseEntity.badRequest().body("Order not found or refund not requested");
     }
 }
