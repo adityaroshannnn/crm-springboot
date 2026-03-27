@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: crm-springboot
+    runtime: docker
+    repo: https://github.com/adityaroshannnn/crm-springboot.git
+    branch: main
+    plan: free
+    envVars:
+      - key: DB_URL
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: PORT
+        value: 8081
+      - key: JAVA_TOOL_OPTIONS
+        value: -Xmx256m
