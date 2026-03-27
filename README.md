@@ -1,4 +1,4 @@
-<![CDATA[<div align="center">
+<div align="center">
 
 # 🏢 Enterprise CRM System
 
@@ -274,4 +274,3 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 ⭐ Star this repo if you found it useful!
 
 </div>
-]]>
