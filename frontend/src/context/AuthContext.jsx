@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 
 const AuthContext = createContext(null);
 
@@ -7,30 +7,37 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);        // { username, roles }
   const [loading, setLoading] = useState(true);
 
-  // Check session on first load
+  // Restore user from localStorage on first load
   useEffect(() => {
-    axios.get('/api/auth/me', { withCredentials: true })
-      .then(res => { if (res.data?.username) setUser(res.data); })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    const token = localStorage.getItem('jwt_token');
+    const savedUser = localStorage.getItem('jwt_user');
+    if (token && savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch {
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('jwt_user');
+      }
+    }
+    setLoading(false);
   }, []);
 
   const login = async (username, password) => {
-    const params = new URLSearchParams();
-    params.append('username', username);
-    params.append('password', password);
-    const resp = await axios.post('/api/auth/login', params, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      withCredentials: true
-    });
-    if (resp.data.success) {
-      setUser({ username: resp.data.username, roles: resp.data.roles });
-    }
-    return resp.data;
+    const resp = await api.post('/api/auth/login', { username, password });
+    const { token, username: name, roles } = resp.data;
+    
+    // Store JWT token and user info
+    localStorage.setItem('jwt_token', token);
+    const userData = { username: name, roles: Array.from(roles) };
+    localStorage.setItem('jwt_user', JSON.stringify(userData));
+    setUser(userData);
+    
+    return { success: true, roles: Array.from(roles), username: name };
   };
 
   const logout = async () => {
-    await axios.post('/api/auth/logout', {}, { withCredentials: true });
+    localStorage.removeItem('jwt_token');
+    localStorage.removeItem('jwt_user');
     setUser(null);
   };
 

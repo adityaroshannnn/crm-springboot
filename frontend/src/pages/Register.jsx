@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function Register() {
@@ -16,7 +16,7 @@ export default function Register() {
     setError('');
     if (password !== confirm) { setError('Passwords do not match'); setLoading(false); return; }
     try {
-      const resp = await axios.post('/api/auth/register', { username, password, confirm });
+      const resp = await api.post('/api/auth/register', { username, password, confirm });
       if (resp.data.success) navigate('/login');
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed');

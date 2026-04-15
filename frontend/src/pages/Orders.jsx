@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useAuth } from '../context/AuthContext';
+
+const ALL_STATUSES = ['PURCHASED', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'REFUND_REQUESTED', 'REFUNDED'];
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
@@ -8,7 +10,7 @@ export default function Orders() {
   const { isAdmin } = useAuth();
 
   const fetchOrders = () => {
-    axios.get('/api/orders', { withCredentials: true })
+    api.get('/api/orders')
       .then(res => setOrders(res.data))
       .finally(() => setLoading(false));
   };
@@ -16,7 +18,12 @@ export default function Orders() {
   useEffect(() => { fetchOrders(); }, []);
 
   const approveRefund = async (id) => {
-    await axios.post(`/api/orders/approve-refund/${id}`, {}, { withCredentials: true });
+    await api.post(`/api/orders/approve-refund/${id}`, {});
+    fetchOrders();
+  };
+
+  const updateStatus = async (id, status) => {
+    await api.put(`/api/orders/${id}/status`, { status });
     fetchOrders();
   };
 
@@ -26,8 +33,11 @@ export default function Orders() {
   const statusColor = (s) => {
     switch(s) {
       case 'PURCHASED': return 'bg-blue-500/10 text-blue-400';
+      case 'CONFIRMED': return 'bg-cyan-500/10 text-cyan-400';
+      case 'SHIPPED': return 'bg-purple-500/10 text-purple-400';
+      case 'DELIVERED': return 'bg-green-500/10 text-green-400';
       case 'REFUND_REQUESTED': return 'bg-yellow-500/10 text-yellow-400';
-      case 'REFUNDED': return 'bg-green-500/10 text-green-400';
+      case 'REFUNDED': return 'bg-red-500/10 text-red-400';
       default: return 'bg-gray-500/10 text-gray-400';
     }
   };
@@ -62,7 +72,15 @@ export default function Orders() {
                   <td className="px-6 py-4 text-gray-400">{o.quantity}</td>
                   <td className="px-6 py-4 text-gold-400 font-bold">₹{o.totalPrice}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColor(o.status)}`}>{o.status}</span>
+                    <select
+                      value={o.status}
+                      onChange={(e) => updateStatus(o.id, e.target.value)}
+                      className={`px-2 py-1 rounded-lg text-xs font-medium border-0 outline-none cursor-pointer ${statusColor(o.status)} bg-transparent`}
+                    >
+                      {ALL_STATUSES.map(s => (
+                        <option key={s} value={s} className="bg-dark-900 text-white">{s.replace('_', ' ')}</option>
+                      ))}
+                    </select>
                   </td>
                   <td className="px-6 py-4">
                     {o.status === 'REFUND_REQUESTED' && (

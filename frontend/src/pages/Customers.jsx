@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useAuth } from '../context/AuthContext';
 
 export default function Customers() {
@@ -7,34 +7,34 @@ export default function Customers() {
   const [managers, setManagers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', status: 'ACTIVE', managerId: '' });
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', status: 'ACTIVE', managerId: '', username: '', password: '' });
   const { isAdmin } = useAuth();
-
+ 
   const fetchData = () => {
     Promise.all([
-      axios.get('/api/customers', { withCredentials: true }),
-      axios.get('/api/managers', { withCredentials: true })
+      api.get('/api/customers'),
+      api.get('/api/managers')
     ]).then(([custRes, mgrRes]) => {
       setCustomers(custRes.data);
       setManagers(mgrRes.data);
     }).finally(() => setLoading(false));
   };
-
+ 
   useEffect(() => { fetchData(); }, []);
-
+ 
   const handleSave = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`/api/customers?managerId=${form.managerId}`, form, { withCredentials: true });
+      await api.post(`/api/customers?managerId=${form.managerId}`, form);
       setShowForm(false);
-      setForm({ firstName: '', lastName: '', email: '', phone: '', status: 'ACTIVE', managerId: '' });
+      setForm({ firstName: '', lastName: '', email: '', phone: '', status: 'ACTIVE', managerId: '', username: '', password: '' });
       fetchData();
     } catch (err) { alert('Failed to save customer'); }
   };
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this customer?')) return;
-    await axios.delete(`/api/customers/${id}`, { withCredentials: true });
+    await api.delete(`/api/customers/${id}`);
     fetchData();
   };
 
@@ -63,7 +63,11 @@ export default function Customers() {
             <option value="">Select Manager</option>
             {managers.map(m => <option key={m.id} value={m.id}>{m.firstName} {m.lastName}</option>)}
           </select>
-          <button type="submit" className="bg-gold-500 text-dark-900 font-semibold rounded-lg py-2.5 hover:bg-gold-400 transition">Save</button>
+          <div className="grid grid-cols-2 gap-4 md:col-span-2">
+            <input placeholder="Login Username" className="bg-dark-900 border border-gray-700/50 rounded-lg px-4 py-2.5 text-white focus:border-gold-400 outline-none" value={form.username} onChange={e => setForm({...form, username: e.target.value})} />
+            <input placeholder="Login Password" type="password" className="bg-dark-900 border border-gray-700/50 rounded-lg px-4 py-2.5 text-white focus:border-gold-400 outline-none" value={form.password} onChange={e => setForm({...form, password: e.target.value})} />
+          </div>
+          <button type="submit" className="bg-gold-500 text-dark-900 font-semibold rounded-lg py-2.5 hover:bg-gold-400 transition md:col-span-2">Save Customer & Create Account</button>
         </form>
       )}
 

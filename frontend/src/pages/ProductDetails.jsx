@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -21,7 +21,7 @@ export default function ProductDetails() {
   const [purchasing, setPurchasing] = useState(false);
 
   useEffect(() => {
-    axios.get(`/api/shop/product/${id}`, { withCredentials: true })
+    api.get(`/api/shop/product/${id}`)
       .then(res => setData(res.data))
       .catch(() => setError('Product not found.'))
       .finally(() => setLoading(false));
@@ -31,7 +31,7 @@ export default function ProductDetails() {
     e.preventDefault();
     setReviewMsg('');
     try {
-      const resp = await axios.post(`/api/shop/product/${id}/review`, { rating, comment }, { withCredentials: true });
+      const resp = await api.post(`/api/shop/product/${id}/review`, { rating, comment });
       if (resp.data.success) {
         setData({ ...data, reviews: [...data.reviews, resp.data.review] });
         setComment('');
@@ -50,9 +50,9 @@ export default function ProductDetails() {
 
     try {
       // Step 1: Create Razorpay order via backend
-      const orderResp = await axios.post('/api/payment/create_order', {
+      const orderResp = await api.post('/api/payment/create_order', {
         amount: totalAmount
-      }, { withCredentials: true });
+      });
 
       const { orderId, amount, currency } = orderResp.data;
 
@@ -67,15 +67,15 @@ export default function ProductDetails() {
         handler: async function (response) {
           // Step 3: On successful payment, complete the purchase
           try {
-            const purchaseResp = await axios.post('/api/shop/purchase', {
+            const purchaseResp = await api.post('/api/shop/purchase', {
               productId: id,
               quantity,
               razorpay_payment_id: response.razorpay_payment_id
-            }, { withCredentials: true });
+            });
 
             if (purchaseResp.data.success) {
               setPurchaseMsg('✅ Payment successful! Order #' + purchaseResp.data.order.id);
-              const updated = await axios.get(`/api/shop/product/${id}`, { withCredentials: true });
+              const updated = await api.get(`/api/shop/product/${id}`);
               setData(updated.data);
             }
           } catch (err) {

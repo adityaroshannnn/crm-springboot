@@ -1,10 +1,25 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../api';
 
 export default function Navbar() {
   const { user, isAdmin, isLoggedIn, logout } = useAuth();
   const navigate = useNavigate();
+  const [storeName, setStoreName] = useState('CRM System');
+
+  useEffect(() => {
+    api.get('/api/store-settings')
+      .then(res => {
+        if (res.data?.storeName) setStoreName(res.data.storeName);
+      })
+      .catch(() => {});
+
+    // Listen for real-time updates from StoreSettings page
+    const handleUpdate = (e) => setStoreName(e.detail);
+    window.addEventListener('store-name-updated', handleUpdate);
+    return () => window.removeEventListener('store-name-updated', handleUpdate);
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -18,7 +33,7 @@ export default function Navbar() {
         <Link to="/" className="flex items-center gap-3 group">
           <span className="text-2xl">✦</span>
           <span className="text-xl font-serif font-semibold text-gold-400 group-hover:text-gold-300 transition">
-            CRM System
+            {storeName}
           </span>
         </Link>
 
@@ -27,7 +42,12 @@ export default function Navbar() {
           <NavLink to="/shop">Shop</NavLink>
 
           {isLoggedIn && (
-            <NavLink to="/my-orders">My Orders</NavLink>
+            <>
+              <NavLink to="/my-orders">My Orders</NavLink>
+              <NavLink to="/help-desk">Help</NavLink>
+              <NavLink to="/contact">Contact</NavLink>
+              <NavLink to="/profile">Profile</NavLink>
+            </>
           )}
 
           {isAdmin && (
@@ -37,6 +57,7 @@ export default function Navbar() {
               <NavLink to="/managers">Managers</NavLink>
               <NavLink to="/products">Products</NavLink>
               <NavLink to="/orders">Orders</NavLink>
+              <NavLink to="/store-settings">⚙ Settings</NavLink>
             </>
           )}
 

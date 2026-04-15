@@ -16,7 +16,8 @@ public class Customer {
     private String firstName;
     private String lastName;
     private String email;
-
+    private String phone;
+ 
     @Enumerated(EnumType.STRING)
     private CustomerStatus status;
 
@@ -61,7 +62,15 @@ public class Customer {
     public void setEmail(String email) {
         this.email = email;
     }
-
+ 
+    public String getPhone() {
+        return phone;
+    }
+ 
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+ 
     public CustomerStatus getStatus() {
         return status;
     }

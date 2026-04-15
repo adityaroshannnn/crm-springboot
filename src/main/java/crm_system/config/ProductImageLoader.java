@@ -50,13 +50,18 @@ public class ProductImageLoader implements CommandLineRunner {
 
         for (int i = 0; i < products.size(); i++) {
             Product product = products.get(i);
+
+            // Skip products that already have a locally uploaded image
+            if (product.getImageUrl() != null && product.getImageUrl().startsWith("/uploads/")) {
+                continue;
+            }
+
             String matchedUrl = findImageForProduct(product.getName());
 
             if (matchedUrl == null) {
                 matchedUrl = FALLBACK_IMAGES[i % FALLBACK_IMAGES.length];
             }
 
-            // Always update to ensure working URLs
             product.setImageUrl(matchedUrl);
             productService.saveProduct(product);
             updated++;

@@ -9,6 +9,7 @@ import crm_system.service.OrderService;
 import crm_system.service.ProductService;
 import crm_system.entity.Review;
 import crm_system.service.ReviewService;
+import crm_system.service.EmailService;
 import crm_system.enums.CustomerStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ public class ShopController {
     private final OrderService orderService;
     private final CustomerRepository customerRepository;
     private final ReviewService reviewService;
+    private final EmailService emailService;
 
     @Value("${razorpay.key.id}")
     private String razorpayKeyId;
@@ -33,11 +35,13 @@ public class ShopController {
     public ShopController(ProductService productService,
                            OrderService orderService,
                            CustomerRepository customerRepository,
-                           ReviewService reviewService) {
+                           ReviewService reviewService,
+                           EmailService emailService) {
         this.productService = productService;
         this.orderService = orderService;
         this.customerRepository = customerRepository;
         this.reviewService = reviewService;
+        this.emailService = emailService;
     }
 
     @GetMapping
@@ -121,6 +125,9 @@ public class ShopController {
 
         product.setStock(product.getStock() - quantity);
         productService.saveProduct(product);
+
+        // Send order confirmation email
+        try { emailService.sendOrderConfirmation(order); } catch (Exception ignored) {}
 
         return ResponseEntity.ok(Map.of("success", true, "order", order));
     }

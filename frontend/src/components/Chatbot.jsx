@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
@@ -23,7 +23,7 @@ export default function Chatbot() {
     setLoading(true);
 
     try {
-      const resp = await axios.post('/api/chat', { message: userMsg });
+      const resp = await api.post('/api/chat', { message: userMsg });
       setMessages(prev => [...prev, { from: 'bot', text: resp.data.response }]);
     } catch {
       setMessages(prev => [...prev, { from: 'bot', text: 'I apologize, I am unable to respond at this moment.' }]);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useAuth } from '../context/AuthContext';
 
 export default function Managers() {
@@ -10,7 +10,7 @@ export default function Managers() {
   const { isAdmin } = useAuth();
 
   const fetchManagers = () => {
-    axios.get('/api/managers', { withCredentials: true })
+    api.get('/api/managers')
       .then(res => setManagers(res.data))
       .finally(() => setLoading(false));
   };
@@ -19,7 +19,7 @@ export default function Managers() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    await axios.post('/api/managers', form, { withCredentials: true });
+    await api.post('/api/managers', form);
     setShowForm(false);
     setForm({ firstName: '', lastName: '', email: '', department: '' });
     fetchManagers();
@@ -27,7 +27,7 @@ export default function Managers() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this manager?')) return;
-    await axios.delete(`/api/managers/${id}`, { withCredentials: true });
+    await api.delete(`/api/managers/${id}`);
     fetchManagers();
   };
 

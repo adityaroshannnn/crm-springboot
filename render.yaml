@@ -5,6 +5,7 @@ services:
     repo: https://github.com/adityaroshannnn/crm-springboot.git
     branch: main
     plan: free
+    healthCheckPath: /api/auth/login
     envVars:
       - key: DB_URL
         sync: false
@@ -16,3 +17,17 @@ services:
         value: 8081
       - key: JAVA_TOOL_OPTIONS
         value: -Xmx256m
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: SHOW_SQL
+        value: "false"
+      - key: LOG_LEVEL
+        value: WARN
